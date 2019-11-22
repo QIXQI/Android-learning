@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
                 android.R.layout.simple_spinner_item, getDataSource());
         spinner1.setAdapter(adapter);
 
-        Button button1 = (Button) this.findViewById(R.id.check);
+        Button button1 = (Button) this.findViewById(R.id.register);
         button1.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){

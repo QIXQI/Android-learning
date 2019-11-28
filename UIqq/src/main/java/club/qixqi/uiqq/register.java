@@ -3,7 +3,10 @@ package club.qixqi.uiqq;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.Manifest;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
@@ -27,7 +30,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements OnClickListener, OnCheckedChangeListener {
+public class register extends AppCompatActivity implements OnClickListener, OnCheckedChangeListener {
 
     private Spinner spinner1;
 
@@ -37,12 +40,16 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
     private RadioGroup sex;
     private EditText phone;
 
+    private DatabaseHelper dbHelper;
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_register);
+
+        dbHelper = new DatabaseHelper(this, "QixQi.db", null, 3);
 
         username = (EditText) findViewById(R.id.username);
         password = (EditText) findViewById(R.id.password);
@@ -52,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
 
         // 下拉列表数据源
         spinner1 = (Spinner) this.findViewById(R.id.department);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this,
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(register.this,
                 android.R.layout.simple_spinner_item, getDataSource());
         spinner1.setAdapter(adapter);
 
@@ -84,8 +91,12 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
                 // 点击注册按钮事件
                 // Intent intent = new Intent(MainActivity.this, login.class);
                 // startActivity(intent);
-                register();
+                // register();
                 // 提交注册信息到服务器
+
+                // 保存到本地
+                int id = userRegister();
+                Toast.makeText(register.this, "注册成功，账号为: " + id, Toast.LENGTH_SHORT).show();
                 break;
             default:
                 break;
@@ -123,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
                             "&sex=" + sexValue +
                             "&phone_num=" + phone.getText());
 
-                    Toast.makeText(MainActivity.this, "http success", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(register.this, "http success", Toast.LENGTH_SHORT).show();
                 } catch (Exception e){
                     e.printStackTrace();
                 } finally {
@@ -140,6 +151,33 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
                 }
             }
         }).run();
+    }
+
+
+    private int userRegister(){
+        // 账号：产生6位随机数
+        int id = (int)((Math.random()*9+1)*100000);
+        String username1 = username.getText().toString();
+        String password1 = password.getText().toString();
+        String sexValue = "u";  // 性别未知
+        if(sex.getCheckedRadioButtonId() == R.id.male_radio){
+            sexValue = "m";
+        }else if(sex.getCheckedRadioButtonId() == R.id.female_radio){
+            sexValue = "f";
+        }
+        String phone_num = phone.getText().toString();
+
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        // 组装数据
+        values.put("id", id);
+        values.put("username", username1);
+        values.put("password", password1);
+        values.put("sex", sexValue);
+        values.put("phone_num", phone_num);
+        db.insert("user", null, values);
+        return id;
     }
 
 }
